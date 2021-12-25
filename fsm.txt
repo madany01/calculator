@@ -1,0 +1,61 @@
+# r = a op b
+
+initially:
+    r = null
+    a = '0'
+    op = null
+    b = null
+    stage = stage_A
+
+
+
+(stage_A):
+  # main value: a
+  digit: append it to a
+  backspace: pop from a
+  CE: set a = '0'
+  negate: flip sign of a
+  equal: 
+    if both b and op not null => set r=(a op b), move to stage_R_Eq_A_Op_B
+    else ignore
+  operator: set op=operator, move to stage_A_Op
+
+
+(stage_A_Op):
+  # main value: a
+  # show a as init value
+  backspace: ignore
+  operator: set op=operator
+  negate: set b = -a, move to stage_A_Op_B
+
+  digit: set b=digit, move to stage_A_Op_B
+  CE: set b='0', move to stage_A_Op_B
+  equal: set b=a, move to stage_R_Eq_A_Op_B
+
+
+(stage_A_Op_B):
+  # main value: b
+  # updates history screen
+  digit:
+    if typeof b is string then append digit to b
+    else set b = digit
+  backspace:
+    if typeof b is string then pop from b
+    else ignore
+  CE: set b = '0'
+  negate: flip sign of b
+
+  operator:  set a=a op b, op=operator, move to stage_A_Op
+  equal: set r=a op b, move to stage_R_Eq_A_Op_B
+
+
+(stage_R_Eq_A_Op_B):
+  # main value: r 
+  # clear history screen
+  backspace: ignore
+  negate: flip sign of r
+  
+  digit: set a=digit, move to stage_A
+  CE: set a='0', move to stage_A
+  equal: set a=r, r=a op b
+  operator:  set a=r, op=operator, move to stage_A_Op
